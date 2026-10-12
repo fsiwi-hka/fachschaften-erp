@@ -1,0 +1,12 @@
+services:
+  web:
+    networks:
+      default:
+      npm:
+        aliases:
+          - fachschaften-erp
+
+networks:
+  npm:
+    name: nginx-proxy-manager_default
+    external: true
