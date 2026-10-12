@@ -1,0 +1,93 @@
+name: Deploy Fachschaften ERP
+
+on:
+  push:
+    branches:
+      - main
+  # Erneut ausrollen ohne neuen Commit (Actions -> Deploy Fachschaften ERP -> Run workflow).
+  workflow_dispatch:
+
+# Nur ein Deploy gleichzeitig.
+concurrency:
+  group: deploy-erp
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Von Hand gestartete Läufe nur für main ausführen.
+    if: github.ref_name == 'main'
+    steps:
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: DEPLOY_PATH,REPO_URL,HTTP_PORT,HTTP_BIND,APP_BASE_URL,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,ADMIN_USERNAME,ADMIN_EMAIL,ADMIN_INITIAL_PASSWORD,EMAIL_PROVIDER,EMAIL_FROM_ADDRESS,EMAIL_FROM_NAME,MAILJET_API_KEY,MAILJET_SECRET_KEY,MAILJET_SANDBOX_MODE
+          script: |
+            set -eu
+
+            if [ ! -d "$DEPLOY_PATH/.git" ]; then
+              echo "FEHLER: $DEPLOY_PATH ist kein Git-Repository."
+              echo "Einmalig auf dem Server anlegen:"
+              echo "  git clone $REPO_URL $DEPLOY_PATH"
+              exit 1
+            fi
+
+            echo "Deploy von main nach $DEPLOY_PATH (Port $HTTP_PORT)"
+
+            cd "$DEPLOY_PATH"
+            git fetch origin
+            git reset --hard origin/main
+            git clean -fd
+
+            cd deploy
+
+            # Eigener Projektname: nicht "deploy", sonst kollidiert der Stack mit
+            # anderen Projekten, die ebenfalls aus einem deploy/-Ordner starten.
+            export COMPOSE_PROJECT_NAME=fachschaften-erp
+            export HTTP_PORT HTTP_BIND APP_BASE_URL
+            export POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD
+            export ADMIN_USERNAME ADMIN_EMAIL ADMIN_INITIAL_PASSWORD
+            export EMAIL_PROVIDER EMAIL_FROM_ADDRESS EMAIL_FROM_NAME
+            export MAILJET_API_KEY MAILJET_SECRET_KEY MAILJET_SANDBOX_MODE
+
+            # Erst bauen, dann austauschen: die alte Version läuft bis dahin weiter.
+            # Kein "down -v", die Volumes enthalten Datenbank und Login-Schlüssel.
+            docker compose build
+            docker compose up -d --remove-orphans
+
+            # Warten, bis die API über nginx antwortet; sonst Deploy als fehlgeschlagen melden.
+            for i in $(seq 1 60); do
+              if curl -fsS "http://127.0.0.1:${HTTP_PORT}/api/auth/password-policy" > /dev/null; then
+                echo "Deploy erfolgreich."
+                docker image prune -f
+                exit 0
+              fi
+              sleep 2
+            done
+
+            echo "FEHLER: API antwortet nicht. Letzte Logs:"
+            docker compose logs --tail=100 api
+            exit 1
+        env:
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
+          # Lesbare Werte (Settings -> Secrets and variables -> Actions -> Variables)
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          HTTP_PORT: ${{ vars.HTTP_PORT }}
+          HTTP_BIND: ${{ vars.HTTP_BIND || '127.0.0.1' }}
+          APP_BASE_URL: ${{ vars.APP_BASE_URL }}
+          POSTGRES_DB: ${{ vars.POSTGRES_DB || 'erp' }}
+          POSTGRES_USER: ${{ vars.POSTGRES_USER || 'erp' }}
+          ADMIN_USERNAME: ${{ vars.ADMIN_USERNAME || 'admin' }}
+          ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
+          EMAIL_PROVIDER: ${{ vars.EMAIL_PROVIDER || 'Dev' }}
+          EMAIL_FROM_ADDRESS: ${{ vars.EMAIL_FROM_ADDRESS }}
+          EMAIL_FROM_NAME: ${{ vars.EMAIL_FROM_NAME || 'Fachschaften ERP' }}
+          MAILJET_SANDBOX_MODE: ${{ vars.MAILJET_SANDBOX_MODE || 'false' }}
+          # Geheime Werte (Settings -> Secrets and variables -> Actions -> Secrets)
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          ADMIN_INITIAL_PASSWORD: ${{ secrets.ADMIN_INITIAL_PASSWORD }}
+          MAILJET_API_KEY: ${{ secrets.MAILJET_API_KEY }}
+          MAILJET_SECRET_KEY: ${{ secrets.MAILJET_SECRET_KEY }}
