@@ -47,6 +47,7 @@ jobs:
             # Eigener Projektname: nicht "deploy", sonst kollidiert der Stack mit
             # anderen Projekten, die ebenfalls aus einem deploy/-Ordner starten.
             export COMPOSE_PROJECT_NAME=fachschaften-erp
+            export COMPOSE_FILE=docker-compose.yml:docker-compose.proxy.yml
             export HTTP_PORT HTTP_BIND APP_BASE_URL
             export POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD
             export ADMIN_USERNAME ADMIN_EMAIL ADMIN_INITIAL_PASSWORD
