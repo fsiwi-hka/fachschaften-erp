@@ -57,6 +57,7 @@ model/delivery-dto.ts
 model/delivery-overview-dto.ts
 model/delivery-position-dto.ts
 model/disable2-fa-request.ts
+model/forgot-password-request.ts
 model/inventory-transaction-dto.ts
 model/inventory-transaction-type.ts
 model/invite-request.ts
@@ -76,7 +77,9 @@ model/me-dto.ts
 model/models.ts
 model/month-summary-dto.ts
 model/password-policy-dto.ts
+model/product-detail-dto.ts
 model/product-dto.ts
+model/reset-password-request.ts
 model/reset2-fa-request.ts
 model/role-dto.ts
 model/setup2-fa-request.ts
@@ -88,9 +91,11 @@ model/stock-update-request.ts
 model/supplier-dto.ts
 model/tax-area-summary-dto.ts
 model/tax-area.ts
+model/update-user-request.ts
 model/upsert-item-type-request.ts
 model/upsert-supplier-request.ts
-model/upsert-user-request.ts
 model/user-dto.ts
+model/user-role-dto.ts
+model/user-status.ts
 param.ts
 variables.ts

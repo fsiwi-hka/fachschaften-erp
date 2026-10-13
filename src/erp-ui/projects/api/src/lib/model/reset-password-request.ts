@@ -9,10 +9,9 @@
  */
 
 
-export interface UpsertUserRequest { 
-    userName: string | null;
-    email: string | null;
-    roles: Array<string>;
-    permissions: Array<string>;
+export interface ResetPasswordRequest { 
+    userId: string;
+    token: string;
+    newPassword: string;
 }
 
