@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Fachschaften_ERP.Models.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Fachschaften_ERP.Models;
 
@@ -16,9 +17,87 @@ public partial class CoreContext
     public DbSet<BookingEntity> Bookings => Set<BookingEntity>();
     public DbSet<BookingCategoryEntity> BookingCategories => Set<BookingCategoryEntity>();
     public DbSet<CashBookEntity> CashBooks => Set<CashBookEntity>();
+    public DbSet<WikiPageEntity> WikiPages => Set<WikiPageEntity>();
+    public DbSet<StockTakeEntity> StockTakes => Set<StockTakeEntity>();
+    public DbSet<StockTakePositionEntity> StockTakePositions => Set<StockTakePositionEntity>();
+    public DbSet<OrganizationSettingsEntity> OrganizationSettings => Set<OrganizationSettingsEntity>();
+    public DbSet<CustomTableEntity> CustomTables => Set<CustomTableEntity>();
+    public DbSet<CustomTableRowEntity> CustomTableRows => Set<CustomTableRowEntity>();
     
     private static void OnErpCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<CustomTableEntity>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+            entity.Property(t => t.Name).IsRequired().HasMaxLength(100);
+            entity.Property(t => t.Description).HasMaxLength(500);
+            entity.Property(t => t.Columns)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<CustomTableColumn>>(v, (JsonSerializerOptions?)null) ?? new(),
+                    new ValueComparer<List<CustomTableColumn>>(
+                        (a, b) => JsonSerializer.Serialize(a, (JsonSerializerOptions?)null) ==
+                                  JsonSerializer.Serialize(b, (JsonSerializerOptions?)null),
+                        v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null).GetHashCode(),
+                        v => JsonSerializer.Deserialize<List<CustomTableColumn>>(
+                            JsonSerializer.Serialize(v, (JsonSerializerOptions?)null), (JsonSerializerOptions?)null)!));
+            entity.HasMany(t => t.Rows)
+                .WithOne(r => r.Table)
+                .HasForeignKey(r => r.TableId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CustomTableRowEntity>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+            entity.HasIndex(r => r.TableId);
+            entity.Property(r => r.Values)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => v.RootElement.GetRawText(),
+                    v => JsonDocument.Parse(v, default),
+                    new ValueComparer<JsonDocument>(
+                        (a, b) => a!.RootElement.GetRawText() == b!.RootElement.GetRawText(),
+                        v => v.RootElement.GetRawText().GetHashCode(),
+                        v => JsonDocument.Parse(v.RootElement.GetRawText(), default)));
+        });
+
+        modelBuilder.Entity<OrganizationSettingsEntity>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+            entity.Property(s => s.Id).ValueGeneratedNever();
+            entity.Property(s => s.Name).IsRequired().HasMaxLength(100);
+            entity.Property(s => s.Subtitle).HasMaxLength(100);
+            entity.Property(s => s.AccentColor).IsRequired().HasMaxLength(7);
+            entity.Property(s => s.PrivacyContact).HasMaxLength(2000);
+            entity.Property(s => s.ImprintUrl).HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<StockTakeEntity>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+            entity.Property(s => s.Note).HasMaxLength(500);
+            entity.HasMany(s => s.Positions)
+                .WithOne(p => p.StockTake)
+                .HasForeignKey(p => p.StockTakeId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<StockTakePositionEntity>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.HasOne(p => p.Product).WithMany().HasForeignKey(p => p.ProductId);
+            entity.Property(p => p.UnitPurchasePrice).HasColumnType("numeric(10,2)");
+        });
+
+        modelBuilder.Entity<WikiPageEntity>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.Title).IsRequired().HasMaxLength(200);
+            entity.Property(p => p.Category).HasMaxLength(100);
+            entity.Property(p => p.Content).IsRequired();
+        });
 
         modelBuilder.Entity<ProductEntity>(entity =>
         {

@@ -22,6 +22,11 @@ export const routes: Routes = [
       import('./features/auth/components/login-page/login-page').then((m) => m.LoginPage),
   },
   {
+    path: 'datenschutz',
+    loadComponent: () =>
+      import('./pages/privacy/privacy-page/privacy-page').then((m) => m.PrivacyPage),
+  },
+  {
     path: 'forgot-password',
     loadComponent: () =>
       import('./features/auth/components/forgot-password-page/forgot-password-page').then(
@@ -71,6 +76,31 @@ export const routes: Routes = [
       },
 
       {
+        path: 'stock-takes',
+        canActivate: [permissionGuard(PermissionType.InventoryCanRead)],
+        loadComponent: () =>
+          import('./features/inventory/stock-takes/components/stock-takes-page/stock-takes-page').then(
+            (m) => m.StockTakesPage,
+          ),
+      },
+      {
+        path: 'stock-takes/new',
+        canActivate: [permissionGuard(PermissionType.InventoryCanWrite)],
+        loadComponent: () =>
+          import(
+            './features/inventory/stock-takes/components/stock-take-count-page/stock-take-count-page'
+          ).then((m) => m.StockTakeCountPage),
+      },
+      {
+        path: 'stock-takes/:id',
+        canActivate: [permissionGuard(PermissionType.InventoryCanRead)],
+        loadComponent: () =>
+          import('./features/inventory/stock-takes/components/stock-take-page/stock-take-page').then(
+            (m) => m.StockTakePage,
+          ),
+      },
+
+      {
         path: 'deliveries',
         canActivate: [permissionGuard(PermissionType.InventoryCanRead)],
         loadComponent: () =>
@@ -96,6 +126,14 @@ export const routes: Routes = [
           import(
             './features/finance/dashboard/components/finance-dashboard-page/finance-dashboard-page'
           ).then((m) => m.FinanceDashboardPage),
+      },
+      {
+        path: 'finance/report',
+        canActivate: [permissionGuard(PermissionType.FinanceCanRead)],
+        loadComponent: () =>
+          import(
+            './features/finance/report/components/annual-report-page/annual-report-page'
+          ).then((m) => m.AnnualReportPage),
       },
       {
         path: 'finance/bookings',
@@ -187,6 +225,57 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/account/components/account-page/account-page').then(
             (m) => m.AccountPage,
+          ),
+      },
+      // Organisation
+      {
+        path: 'wiki',
+        canActivate: [permissionGuard(PermissionType.WikiCanRead)],
+        loadComponent: () =>
+          import('./features/wiki/components/wiki-list-page/wiki-list-page').then(
+            (m) => m.WikiListPage,
+          ),
+      },
+      {
+        path: 'wiki/new',
+        canActivate: [permissionGuard(PermissionType.WikiCanWrite)],
+        loadComponent: () =>
+          import('./features/wiki/components/wiki-editor-page/wiki-editor-page').then(
+            (m) => m.WikiEditorPage,
+          ),
+      },
+      {
+        path: 'wiki/:id',
+        canActivate: [permissionGuard(PermissionType.WikiCanRead)],
+        loadComponent: () =>
+          import('./features/wiki/components/wiki-page/wiki-page').then((m) => m.WikiPage),
+      },
+      {
+        path: 'wiki/:id/edit',
+        canActivate: [permissionGuard(PermissionType.WikiCanWrite)],
+        loadComponent: () =>
+          import('./features/wiki/components/wiki-editor-page/wiki-editor-page').then(
+            (m) => m.WikiEditorPage,
+          ),
+      },
+      {
+        path: 'tables',
+        canActivate: [permissionGuard(PermissionType.TablesCanRead)],
+        loadComponent: () =>
+          import('./features/tables/components/tables-page/tables-page').then((m) => m.TablesPage),
+      },
+      {
+        path: 'tables/:id',
+        canActivate: [permissionGuard(PermissionType.TablesCanRead)],
+        loadComponent: () =>
+          import('./features/tables/components/table-page/table-page').then((m) => m.TablePage),
+      },
+      {
+        path: 'settings',
+        canActivate: [permissionGuard(PermissionType.SettingsCanWrite)],
+        loadComponent: () =>
+          import('./features/administration/settings/components/settings-page/settings-page').then(
+            (m) => m.SettingsPage,
           ),
       },
       {

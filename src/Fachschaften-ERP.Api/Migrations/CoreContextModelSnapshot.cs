@@ -227,6 +227,80 @@ namespace Fachschaften_ERP.Api.Migrations
                     b.ToTable("CustomFields", "erp");
                 });
 
+            modelBuilder.Entity("Fachschaften_ERP.Models.Entities.CustomTableEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Columns")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("Modified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ModifierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CustomTables", "erp");
+                });
+
+            modelBuilder.Entity("Fachschaften_ERP.Models.Entities.CustomTableRowEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("Modified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ModifierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TableId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Values")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TableId");
+
+                    b.ToTable("CustomTableRows", "erp");
+                });
+
             modelBuilder.Entity("Fachschaften_ERP.Models.Entities.DeliveryEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -504,6 +578,47 @@ namespace Fachschaften_ERP.Api.Migrations
                     b.ToTable("ItemTypes", "erp");
                 });
 
+            modelBuilder.Entity("Fachschaften_ERP.Models.Entities.OrganizationSettingsEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("AccentColor")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
+                    b.Property<string>("ImprintUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("LogoDataUrl")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("Modified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ModifierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("PrivacyContact")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Subtitle")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OrganizationSettings", "erp");
+                });
+
             modelBuilder.Entity("Fachschaften_ERP.Models.Entities.ProductEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -564,6 +679,66 @@ namespace Fachschaften_ERP.Api.Migrations
                     b.ToTable("Products", "erp");
                 });
 
+            modelBuilder.Entity("Fachschaften_ERP.Models.Entities.StockTakeEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("Modified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ModifierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StockTakes", "erp");
+                });
+
+            modelBuilder.Entity("Fachschaften_ERP.Models.Entities.StockTakePositionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("CountedStock")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ExpectedStock")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("StockTakeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("UnitPurchasePrice")
+                        .HasColumnType("numeric(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("StockTakeId");
+
+                    b.ToTable("StockTakePositions", "erp");
+                });
+
             modelBuilder.Entity("Fachschaften_ERP.Models.Entities.SupplierEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -593,6 +768,45 @@ namespace Fachschaften_ERP.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Suppliers", "erp");
+                });
+
+            modelBuilder.Entity("Fachschaften_ERP.Models.Entities.WikiPageEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("Modified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ModifierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WikiPages", "erp");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -740,6 +954,17 @@ namespace Fachschaften_ERP.Api.Migrations
                     b.Navigation("Parent");
                 });
 
+            modelBuilder.Entity("Fachschaften_ERP.Models.Entities.CustomTableRowEntity", b =>
+                {
+                    b.HasOne("Fachschaften_ERP.Models.Entities.CustomTableEntity", "Table")
+                        .WithMany("Rows")
+                        .HasForeignKey("TableId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Table");
+                });
+
             modelBuilder.Entity("Fachschaften_ERP.Models.Entities.DeliveryEntity", b =>
                 {
                     b.HasOne("Fachschaften_ERP.Models.Entities.SupplierEntity", "Supplier")
@@ -796,6 +1021,25 @@ namespace Fachschaften_ERP.Api.Migrations
                     b.Navigation("ItemType");
 
                     b.Navigation("Supplier");
+                });
+
+            modelBuilder.Entity("Fachschaften_ERP.Models.Entities.StockTakePositionEntity", b =>
+                {
+                    b.HasOne("Fachschaften_ERP.Models.Entities.ProductEntity", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Fachschaften_ERP.Models.Entities.StockTakeEntity", "StockTake")
+                        .WithMany("Positions")
+                        .HasForeignKey("StockTakeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("StockTake");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -856,6 +1100,11 @@ namespace Fachschaften_ERP.Api.Migrations
                     b.Navigation("Children");
                 });
 
+            modelBuilder.Entity("Fachschaften_ERP.Models.Entities.CustomTableEntity", b =>
+                {
+                    b.Navigation("Rows");
+                });
+
             modelBuilder.Entity("Fachschaften_ERP.Models.Entities.DeliveryEntity", b =>
                 {
                     b.Navigation("Positions");
@@ -864,6 +1113,11 @@ namespace Fachschaften_ERP.Api.Migrations
             modelBuilder.Entity("Fachschaften_ERP.Models.Entities.ItemTypeEntity", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("Fachschaften_ERP.Models.Entities.StockTakeEntity", b =>
+                {
+                    b.Navigation("Positions");
                 });
 #pragma warning restore 612, 618
         }

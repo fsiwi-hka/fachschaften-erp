@@ -39,6 +39,12 @@ public enum PermissionType
     [Description("inventory.canwrite")]   InventoryWrite,
     [Description("customfields.canread")]  CustomFieldsRead,
     [Description("customfields.canwrite")] CustomFieldsWrite,
+    [Description("wiki.canread")]         WikiRead,
+    [Description("wiki.canwrite")]        WikiWrite,
+    [Description("tables.canread")]       TablesRead,
+    [Description("tables.canwrite")]      TablesWrite,
+    [Description("tabledesign.canwrite")] TableDesignWrite,
+    [Description("settings.canwrite")]    SettingsWrite,
 }
 
 public class PermissionJsonConverter : JsonConverter<PermissionType>

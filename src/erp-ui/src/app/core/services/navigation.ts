@@ -27,6 +27,12 @@ export class Navigation {
           permissions: [PermissionType.InventoryCanRead],
         },
         {
+          label: 'Inventur',
+          route: '/stock-takes',
+          icon: 'clipboard-check-outline',
+          permissions: [PermissionType.InventoryCanRead],
+        },
+        {
           label: 'Lieferungen',
           route: '/deliveries',
           icon: 'truck-delivery',
@@ -61,6 +67,29 @@ export class Navigation {
           route: '/cash-books',
           icon: 'book-open-page-variant',
           permissions: [PermissionType.FinanceCanRead],
+        },
+        {
+          label: 'Jahresabschluss',
+          route: '/finance/report',
+          icon: 'file-chart-outline',
+          permissions: [PermissionType.FinanceCanRead],
+        },
+      ],
+    },
+    {
+      label: 'Organisation',
+      items: [
+        {
+          label: 'Wiki',
+          route: '/wiki',
+          icon: 'book-open-variant',
+          permissions: [PermissionType.WikiCanRead],
+        },
+        {
+          label: 'Tabellen',
+          route: '/tables',
+          icon: 'table-large',
+          permissions: [PermissionType.TablesCanRead],
         },
       ],
     },
@@ -113,6 +142,12 @@ export class Navigation {
           route: '/roles',
           icon: 'shield-account',
           permissions: [PermissionType.RolesCanRead],
+        },
+        {
+          label: 'Einstellungen',
+          route: '/settings',
+          icon: 'cog-outline',
+          permissions: [PermissionType.SettingsCanWrite],
         },
       ],
     },

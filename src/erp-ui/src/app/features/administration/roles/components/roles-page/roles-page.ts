@@ -33,9 +33,13 @@ const AREA_LABELS: Record<string, string> = {
   suppliers: 'Lieferanten',
   customfields: 'Custom Fields',
   finance: 'Finanzen',
+  wiki: 'Wiki',
+  tables: 'Eigene Tabellen: Einträge',
+  tabledesign: 'Eigene Tabellen: Aufbau',
   users: 'Benutzer',
   roles: 'Rollen',
   permissions: 'Rechte vergeben',
+  settings: 'Einstellungen',
 };
 
 @Component({
