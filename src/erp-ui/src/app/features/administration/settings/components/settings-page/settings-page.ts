@@ -13,6 +13,9 @@ const MAX_LOGO_BYTES = 256 * 1024;
 const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
+import { RecoveryKeyCard } from '../recovery-key-card/recovery-key-card';
+import { BackupCard } from '../backup-card/backup-card';
+
 @Component({
   selector: 'app-settings-page',
   imports: [
@@ -28,6 +31,8 @@ const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
     MatHint,
     MatInput,
     PageHeader,
+    RecoveryKeyCard,
+    BackupCard,
   ],
   templateUrl: './settings-page.html',
   styleUrl: './settings-page.scss',

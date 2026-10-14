@@ -23,6 +23,10 @@ public partial class CoreContext
     public DbSet<OrganizationSettingsEntity> OrganizationSettings => Set<OrganizationSettingsEntity>();
     public DbSet<CustomTableEntity> CustomTables => Set<CustomTableEntity>();
     public DbSet<CustomTableRowEntity> CustomTableRows => Set<CustomTableRowEntity>();
+    public DbSet<CustomTableKeyEntity> CustomTableKeys => Set<CustomTableKeyEntity>();
+    public DbSet<VaultEntity> Vaults => Set<VaultEntity>();
+    public DbSet<BackupSettingsEntity> BackupSettings => Set<BackupSettingsEntity>();
+    public DbSet<BackupRunEntity> BackupRuns => Set<BackupRunEntity>();
     
     private static void OnErpCreating(ModelBuilder modelBuilder)
     {
@@ -61,6 +65,48 @@ public partial class CoreContext
                         (a, b) => a!.RootElement.GetRawText() == b!.RootElement.GetRawText(),
                         v => v.RootElement.GetRawText().GetHashCode(),
                         v => JsonDocument.Parse(v.RootElement.GetRawText(), default)));
+        });
+
+        modelBuilder.Entity<BackupSettingsEntity>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+            entity.Property(s => s.Id).ValueGeneratedNever();
+            entity.Property(s => s.WebDavUrl).HasMaxLength(1000);
+            entity.Property(s => s.Username).HasMaxLength(200);
+            entity.Property(s => s.ProtectedPassword).HasMaxLength(2000);
+            entity.Property(s => s.ProtectedArchivePassword).HasMaxLength(2000);
+            entity.Property(s => s.NotifyEmail).HasMaxLength(320);
+        });
+
+        modelBuilder.Entity<BackupRunEntity>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+            entity.HasIndex(r => r.Started);
+            entity.Property(r => r.FileName).HasMaxLength(200);
+            entity.Property(r => r.Message).HasMaxLength(4000);
+        });
+
+        modelBuilder.Entity<VaultEntity>(entity =>
+        {
+            entity.HasKey(v => v.Id);
+            entity.HasIndex(v => v.UserId).IsUnique();
+            entity.Property(v => v.PublicKey).IsRequired().HasMaxLength(1000);
+            entity.Property(v => v.EncryptedPrivateKey).IsRequired().HasMaxLength(4000);
+            entity.Property(v => v.Salt).IsRequired().HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<CustomTableKeyEntity>(entity =>
+        {
+            entity.HasKey(k => new { k.TableId, k.VaultId });
+            entity.Property(k => k.WrappedKey).IsRequired().HasMaxLength(1000);
+            entity.HasOne(k => k.Table)
+                .WithMany(t => t.Keys)
+                .HasForeignKey(k => k.TableId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(k => k.Vault)
+                .WithMany()
+                .HasForeignKey(k => k.VaultId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<OrganizationSettingsEntity>(entity =>
@@ -109,6 +155,12 @@ public partial class CoreContext
 
             entity.Property(p => p.PurchasePrice)
                 .HasColumnType("numeric(10,2)");
+
+            entity.Property(p => p.Unit)
+                .HasMaxLength(ProductBase.MaxUnitLength);
+
+            entity.Property(p => p.PriceUnit)
+                .HasMaxLength(ProductBase.MaxUnitLength);
 
             entity.Property(p => p.InternalSellingPrice)
                 .HasColumnType("numeric(10,2)");
