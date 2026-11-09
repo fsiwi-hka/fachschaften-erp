@@ -35,14 +35,15 @@ public class BackupCsvExporter(CoreContext db)
             .Select(g => new { g.Key, Sum = g.Sum(t => t.Quantity) })
             .ToDictionaryAsync(x => x.Key, x => x.Sum, ct);
 
-        var csv = new Csv("Name", "Typ", "Lieferant", "Bestand in", "Verkaufspreis pro", "Einkaufspreis",
-            "VK Mitglieder", "VK Gäste", "Bestand", "Mindestbestand", "Bestand geführt", "Zusatzfelder", "Aktiv");
+        var csv = new Csv("Name", "Typ", "Lieferant", "Bestand in", "Verkaufspreis pro",
+            "Preiseinheiten pro Bestandseinheit", "Einkaufspreis", "VK Mitglieder", "VK Gäste", "Bestand",
+            "Warenwert (EK)", "Mindestbestand", "Bestand geführt", "Zusatzfelder", "Aktiv");
         foreach (var p in products.OrderBy(p => p.Name))
         {
             csv.Add(p.Name, itemTypes.GetValueOrDefault(p.ItemTypeId), p.SupplierId is { } s ? suppliers.GetValueOrDefault(s) : null,
                 p.Unit ?? ProductBase.DefaultUnit, p.PriceUnit ?? p.Unit ?? ProductBase.DefaultUnit,
-                p.PurchasePrice, p.InternalSellingPrice, p.ExternalSellingPrice,
-                stock.GetValueOrDefault(p.Id), p.LowStockThreshold, p.TrackStock,
+                p.PriceUnitsPerStockUnit, p.PurchasePrice, p.InternalSellingPrice, p.ExternalSellingPrice,
+                stock.GetValueOrDefault(p.Id), p.StockValue(stock.GetValueOrDefault(p.Id)), p.LowStockThreshold, p.TrackStock,
                 p.CustomFieldValues.RootElement.GetRawText() is "{}" ? null : p.CustomFieldValues.RootElement.GetRawText(),
                 p.IsActive);
         }
@@ -86,17 +87,21 @@ public class BackupCsvExporter(CoreContext db)
 
         var categories = await db.BookingCategories.ToListAsync(ct);
         var cashBooks = await db.CashBooks.ToListAsync(ct);
-        csv = new Csv("Datum", "Betrag", "Beschreibung", "Kategorie", "Steuerbereich", "Kasse", "Quelle", "Beleg", "Umbuchung");
+        csv = new Csv("Datum", "Betrag", "Beschreibung", "Kategorie", "Steuerbereich", "Kasse", "Beleg", "Umbuchung");
         foreach (var b in await db.Bookings.Where(b => b.IsActive).OrderBy(b => b.Date).ToListAsync(ct))
         {
             csv.Add(Date(b.Date), b.Amount, b.Description,
                 categories.FirstOrDefault(c => c.Id == b.CategoryId)?.Name,
                 b.TaxArea is { } area ? TaxAreaLabel(area) : null,
                 cashBooks.FirstOrDefault(c => c.Id == b.CashBookId)?.Name,
-                b.Source is { } source ? SourceLabel(source) : null,
                 b.ReceiptUrl, b.TransferGroupId is null ? null : "Ja");
         }
         yield return ("csv/buchungen.csv", csv.ToString());
+
+        csv = new Csv("Datum", "Betrag", "Quelle", "Beschreibung");
+        foreach (var i in await db.CashIncomes.Where(i => i.IsActive).OrderBy(i => i.Date).ToListAsync(ct))
+            csv.Add(Date(i.Date), i.Amount, SourceLabel(i.Source), i.Description);
+        yield return ("csv/kasseneinnahmen.csv", csv.ToString());
 
         csv = new Csv("Name", "Steuerbereich", "Aktiv");
         foreach (var c in categories.OrderBy(c => c.Name)) csv.Add(c.Name, TaxAreaLabel(c.TaxArea), c.IsActive);
